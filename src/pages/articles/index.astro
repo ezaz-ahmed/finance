@@ -1,8 +1,8 @@
 ---
 import { getCollection } from "astro:content";
-import type { CollectionEntry, CollectionKey } from "astro:content";
+import type { CollectionEntry } from "astro:content";
 import MainLayout from "../../layouts/MainLayout.astro";
-import { formatDate } from "../../util";
+import ArticleCard from "../../components/ArticleCard.astro";
 
 const allBlogArticles: CollectionEntry<"blog">[] = (
   await getCollection("blog")
@@ -14,46 +14,11 @@ const allBlogArticles: CollectionEntry<"blog">[] = (
 
 <MainLayout title="Articles, Stories & Tutorials for tech people">
   <h1 class="text-2xl pb-3">All Articles</h1>
-  <!-- Main Grid -->
+
   <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-    {
-      allBlogArticles.map((article) => (
-        <div class="max-w-md mx-auto mt-10">
-          <div class="bg-white rounded-lg overflow-hidden shadow-lg">
-            <a href={"/articles/" + article.slug}>
-              <img
-                src={"/images/" + article.data.image}
-                alt="Article Image"
-                class="w-full h-48 object-cover hover:opacity-75 transition duration-300 ease-in-out"
-              />
-            </a>
-            <div class="p-6">
-              <h2 class="text-2xl font-semibold mb-2">
-                <a href={"/articles/" + article.slug}>{article.data.title}</a>
-              </h2>
-              <p class="text-gray-600 text-sm mb-4">
-                {formatDate(article.data.pubDate)}
-              </p>
-              <div class="flex flex-wrap gap-2">
-                {article.data.tags.map((tag: string, index: number) => (
-                  <span
-                    class:list={[
-                      "px-2 py-1 text-white rounded-full text-xs hover:opacity-90",
-                      index % 2 === 0 ? "bg-green-500" : "bg-indigo-500",
-                    ]}
-                  >
-                    <a href={"/articles/tag/" + tag}>{tag}</a>
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      ))
-    }
+    {allBlogArticles.map((article) => <ArticleCard article={article} />)}
   </div>
 
-  <!-- Pagination -->
   <div class="flex justify-between mt-10">
     <a
       href="#"
@@ -69,3 +34,4 @@ const allBlogArticles: CollectionEntry<"blog">[] = (
     </a>
   </div>
 </MainLayout>
+../../utils
