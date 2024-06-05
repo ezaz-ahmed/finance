@@ -10,37 +10,62 @@ const expenseSchema = z.object({
   amount: z.number().int().positive(),
 });
 
-type Expense = z.infer<typeof expenseSchema>
+type Expense = z.infer<typeof expenseSchema>;
 
-const createExpenseSchema = expenseSchema.omit({id: true})
+const createExpenseSchema = expenseSchema.omit({ id: true });
+const FakeExpenses: Expense[] = [];
 
 expensesRoute
   .get("/", (c) => {
     return c.json({
-      expenses: [],
+      expenses: FakeExpenses,
     });
   })
   .post("/", zValidator("json", createExpenseSchema), (c) => {
-    const expense = c.req.valid("json");
+    const expense = c.req.valid("json") as Omit<Expense, "id">;
+    const newExpense: Expense = {
+      id: FakeExpenses.length + 1,
+      ...expense,
+    };
 
-    console.log({ expense });
+    FakeExpenses.push(newExpense);
+    console.log({ newExpense });
 
-    return c.json({});
+    return c.json({ expense: newExpense });
   })
   .get("/:id([0-9]+)", (c) => {
-  const id = Number.parseInt(c.req.param("id"), 10);
+    const id = Number.parseInt(c.req.param("id")!, 10);
+    const expense = FakeExpenses.find((exp) => exp.id === id);
 
-  const expense = "something"; 
+    if (!expense) {
+      return c.notFound();
+    }
 
-  if (!expense) {
-    return c.notFound();
-  }
+    return c.json({ expense });
+  })
+  .put("/:id([0-9]+)", zValidator("json", createExpenseSchema), (c) => {
+    const id = Number.parseInt(c.req.param("id")!, 10);
+    const updatedData = c.req.valid("json") as Omit<Expense, "id">;
 
-  return c.json({ expense });
-})
-  .put("/:id{[0-9]+}", (c) => {
-    const id = Number.parseInt(c.req.param("id"));
+    const expenseIndex = FakeExpenses.findIndex((exp) => exp.id === id);
+    if (expenseIndex === -1) {
+      return c.notFound();
+    }
+
+    FakeExpenses[expenseIndex] = { id, ...updatedData };
+
+    return c.json({ expense: FakeExpenses[expenseIndex] });
+  })
+  .delete("/:id([0-9]+)", (c) => {
+    const id = Number.parseInt(c.req.param("id")!, 10);
+    const expenseIndex = FakeExpenses.findIndex((exp) => exp.id === id);
+    if (expenseIndex === -1) {
+      return c.notFound();
+    }
+
+    FakeExpenses.splice(expenseIndex, 1);
+
+    return c.json({ message: "Expense deleted successfully" });
   });
-  .delete("/:id{[0-9]+}", (c) => {
-    const id = Number.parseInt(c.req.param("id"));
-  });
+
+export default expensesRoute;
