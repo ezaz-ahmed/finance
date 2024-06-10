@@ -2,8 +2,6 @@ import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 
-export const expensesRoute = new Hono();
-
 const expenseSchema = z.object({
   id: z.number().int().positive().min(1),
   title: z.string().min(3).max(100),
@@ -13,36 +11,43 @@ const expenseSchema = z.object({
 type Expense = z.infer<typeof expenseSchema>;
 
 const createExpenseSchema = expenseSchema.omit({ id: true });
-const FakeExpenses: Expense[] = [];
+const fakeExpenses: Expense[] = [];
 
-expensesRoute
+export const expensesRoute = new Hono()
   .get("/", (c) => {
     return c.json({
-      expenses: FakeExpenses,
+      expenses: fakeExpenses,
     });
+  })
+  .get("/total-spents", (c) => {
+    const totalSum = fakeExpenses.reduce(
+      (acc, expense) => acc + expense.amount,
+      0
+    );
+    return c.json({ total: totalSum });
   })
   .post("/", zValidator("json", createExpenseSchema), (c) => {
     const expense = c.req.valid("json") as Omit<Expense, "id">;
     const newExpense: Expense = {
-      id: FakeExpenses.length + 1,
+      id: fakeExpenses.length + 1,
       ...expense,
     };
 
-    FakeExpenses.push(newExpense);
+    fakeExpenses.push(newExpense);
     console.log({ newExpense });
 
     return c.json({ expense: newExpense });
   })
   .get("/:id{[0-9]+}", (c) => {
     console.log({
-      param: c.req.param("id")
-    })
+      param: c.req.param("id"),
+    });
 
     const id = Number.parseInt(c.req.param("id")!, 10);
 
-    console.log({id})
+    console.log({ id });
 
-    const expense = FakeExpenses.find((exp) => exp.id === id);
+    const expense = fakeExpenses.find((exp) => exp.id === id);
 
     if (!expense) {
       return c.notFound();
@@ -54,23 +59,23 @@ expensesRoute
     const id = Number.parseInt(c.req.param("id")!, 10);
     const updatedData = c.req.valid("json") as Omit<Expense, "id">;
 
-    const expenseIndex = FakeExpenses.findIndex((exp) => exp.id === id);
+    const expenseIndex = fakeExpenses.findIndex((exp) => exp.id === id);
     if (expenseIndex === -1) {
       return c.notFound();
     }
 
-    FakeExpenses[expenseIndex] = { id, ...updatedData };
+    fakeExpenses[expenseIndex] = { id, ...updatedData };
 
-    return c.json({ expense: FakeExpenses[expenseIndex] });
+    return c.json({ expense: fakeExpenses[expenseIndex] });
   })
   .delete("/:id{[0-9]+}", (c) => {
     const id = Number.parseInt(c.req.param("id")!, 10);
-    const expenseIndex = FakeExpenses.findIndex((exp) => exp.id === id);
+    const expenseIndex = fakeExpenses.findIndex((exp) => exp.id === id);
     if (expenseIndex === -1) {
       return c.notFound();
     }
 
-    FakeExpenses.splice(expenseIndex, 1);
+    fakeExpenses.splice(expenseIndex, 1);
 
     return c.json({ message: "Expense deleted successfully" });
   });
