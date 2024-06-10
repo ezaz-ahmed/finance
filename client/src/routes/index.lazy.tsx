@@ -1,5 +1,7 @@
 "use client";
 
+import { createLazyFileRoute } from "@tanstack/react-router";
+
 import {
   Card,
   CardDescription,
@@ -21,7 +23,11 @@ async function getTotalSpent() {
   return data;
 }
 
-const App = () => {
+export const Route = createLazyFileRoute("/")({
+  component: Index,
+});
+
+function Index() {
   const { isPending, isError, error, data } = useQuery({
     queryKey: ["get-total-spent"],
     queryFn: getTotalSpent,
@@ -41,6 +47,4 @@ const App = () => {
       </Card>
     </main>
   );
-};
-
-export default App;
+}
