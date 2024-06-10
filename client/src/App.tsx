@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import {
   Card,
   CardDescription,
@@ -9,27 +8,35 @@ import {
 } from "~/components/ui/card";
 import { cn } from "~/lib/utils";
 import { api } from "~/lib/api";
+import { useQuery } from "@tanstack/react-query";
+
+async function getTotalSpent() {
+  const res = await api.expenses["total-spents"].$get();
+
+  if (!res.ok) {
+    throw new Error("Server Error");
+  }
+
+  const data = res.json();
+  return data;
+}
 
 const App = () => {
-  const [totalSpent, setTotalSpent] = useState(0);
+  const { isPending, isError, error, data } = useQuery({
+    queryKey: ["get-total-spent"],
+    queryFn: getTotalSpent,
+  });
 
-  useEffect(() => {
-    async function fetchTotalSpent() {
-      const res = await api.expenses["total-spents"].$get();
-      const total = await res.json();
+  if (isPending) return "Loading...";
 
-      setTotalSpent(total.total);
-    }
-
-    fetchTotalSpent();
-  }, []);
+  if (isError) return "An Error has occured: " + error.message;
 
   return (
     <main className=" flex justify-center">
       <Card className={cn("w-[380px]")}>
         <CardHeader>
           <CardTitle>Total Spents</CardTitle>
-          <CardDescription>{totalSpent}</CardDescription>
+          <CardDescription>{isPending ? "..." : data.total}</CardDescription>
         </CardHeader>
       </Card>
     </main>
