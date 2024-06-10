@@ -33,8 +33,15 @@ expensesRoute
 
     return c.json({ expense: newExpense });
   })
-  .get("/:id([0-9]+)", (c) => {
+  .get("/:id{[0-9]+}", (c) => {
+    console.log({
+      param: c.req.param("id")
+    })
+
     const id = Number.parseInt(c.req.param("id")!, 10);
+
+    console.log({id})
+
     const expense = FakeExpenses.find((exp) => exp.id === id);
 
     if (!expense) {
@@ -43,7 +50,7 @@ expensesRoute
 
     return c.json({ expense });
   })
-  .put("/:id([0-9]+)", zValidator("json", createExpenseSchema), (c) => {
+  .put("/:id{[0-9]+}", zValidator("json", createExpenseSchema), (c) => {
     const id = Number.parseInt(c.req.param("id")!, 10);
     const updatedData = c.req.valid("json") as Omit<Expense, "id">;
 
@@ -56,7 +63,7 @@ expensesRoute
 
     return c.json({ expense: FakeExpenses[expenseIndex] });
   })
-  .delete("/:id([0-9]+)", (c) => {
+  .delete("/:id{[0-9]+}", (c) => {
     const id = Number.parseInt(c.req.param("id")!, 10);
     const expenseIndex = FakeExpenses.findIndex((exp) => exp.id === id);
     if (expenseIndex === -1) {
