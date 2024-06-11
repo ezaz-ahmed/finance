@@ -11,7 +11,18 @@ const expenseSchema = z.object({
 type Expense = z.infer<typeof expenseSchema>;
 
 const createExpenseSchema = expenseSchema.omit({ id: true });
-const fakeExpenses: Expense[] = [];
+const fakeExpenses: Expense[] = [
+  {
+    id: 1,
+    title: "test 1",
+    amount: 3232,
+  },
+  {
+    id: 2,
+    title: "test 2",
+    amount: 3000,
+  },
+];
 
 export const expensesRoute = new Hono()
   .get("/", (c) => {

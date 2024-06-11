@@ -6,13 +6,13 @@ import { expensesRoute } from "./routes/expenses";
 const app = new Hono();
 app.use("*", logger());
 
-// app.get("/healthcheck", (c) => {
-//   return c.json({
-//     status: "OK",
-//     message: "Service is running",
-//     timestamp: new Date().toISOString(),
-//   });
-// });
+app.get("/healthcheck", (c) => {
+  return c.json({
+    status: "OK",
+    message: "Service is running",
+    timestamp: new Date().toISOString(),
+  });
+});
 
 const apiRoutes = app.basePath("/api").route("/expenses", expensesRoute);
 

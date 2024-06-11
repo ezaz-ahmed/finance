@@ -33,8 +33,6 @@ function Index() {
     queryFn: getTotalSpent,
   });
 
-  if (isPending) return "Loading...";
-
   if (isError) return "An Error has occured: " + error.message;
 
   return (
