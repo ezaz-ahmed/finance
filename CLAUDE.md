@@ -13,20 +13,36 @@ npm run lint      # Run ESLint
 
 ## Architecture
 
-This is a single-page React 19 app built with Vite. There is no routing, no backend, and no external state management library.
+Single-page React 19 app built with Vite. No routing, no backend, no external state management.
 
 **Current structure:**
-- `src/App.jsx` — the entire application: all state, logic, and UI in one component
+
+- `src/App.jsx` — transaction state, `categories` constant, form state + inline form UI, orchestrates child components
+- `src/Summary.jsx` — displays income/expense/balance totals; derives values from `transactions` prop
+- `src/TransactionList.jsx` — renders transaction table with type/category filter UI (own `useState` for filter state)
+- `src/TransactionForm.jsx` — standalone form component with own state; accepts `categories` and `onAdd` props — **created but not yet wired into App.jsx**
 - `src/App.css` — component styles
 - `src/index.css` — global styles
 - `src/main.jsx` — React entry point
 
-**State:** Managed with `useState` directly in `App.jsx`. Transactions are stored in local component state and reset on page refresh (no persistence).
+**State:** `transactions` array lives in `App.jsx`. Filter state lives in `TransactionList.jsx`. Form state is duplicated — `App.jsx` has inline form state AND `TransactionForm.jsx` manages its own state (pending integration).
 
-**Known bugs in the current code:**
-- `amount` is stored as a string, so `totalIncome` and `totalExpenses` use string concatenation instead of numeric addition (the `reduce` adds strings, not numbers)
-- Transaction IDs use `Date.now()` which can collide if two are added in the same millisecond
+**Data shape per transaction:**
+
+```js
+{ id: number, description: string, amount: number, type: 'income'|'expense', category: string, date: string }
+```
+
+**Categories** (defined in `App.jsx`, passed as prop to form and list):
+`food`, `housing`, `utilities`, `transport`, `entertainment`, `salary`, `other`
+
+**No persistence** — state resets on page refresh.
+
+**Known bugs:**
+
+- Transaction IDs use `Date.now()` — can collide if two added in same millisecond
+- `TransactionForm.jsx` exists but `App.jsx` still uses inline form; migration incomplete
 
 ## Git history context
 
-Previous commits show TanStack Router, React Query, and an RPC/server setup — all removed in commit `b4a3ee2`. The current codebase is intentionally a fresh single-component baseline, likely being rebuilt.
+Previous commits show TanStack Router, React Query, and an RPC/server setup — all removed in commit `b4a3ee2`. Monolithic `App.jsx` is being split into components (`Summary`, `TransactionList`, `TransactionForm`).
