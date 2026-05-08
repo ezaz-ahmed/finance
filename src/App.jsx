@@ -30,6 +30,11 @@ function App() {
   const [type, setType] = useState('expense');
   const [category, setCategory] = useState('food');
 
+  const handleDeleteTransaction = (id) => {
+    if (!window.confirm('Delete this transaction?')) return;
+    setTransactions(prev => prev.filter(t => t.id !== id));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!description || !amount) return;
@@ -89,7 +94,7 @@ function App() {
         </form>
       </div>
 
-      <TransactionList transactions={transactions} categories={categories} />
+      <TransactionList transactions={transactions} categories={categories} onDelete={handleDeleteTransaction} />
     </div>
   );
 }
