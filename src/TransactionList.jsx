@@ -37,6 +37,18 @@ function TransactionList({ transactions, categories, onDelete }) {
         </select>
       </div>
 
+      {(filterType !== 'all' || filterCategory !== 'all') && (
+        <div className='filter-badge'>
+          Filtered
+          {filterType !== 'all' && <span>{filterType}</span>}
+          {filterCategory !== 'all' && <span>{filterCategory}</span>}
+          <button onClick={() => { setFilterType('all'); setFilterCategory('all'); }}>✕</button>
+        </div>
+      )}
+
+      {filtered.length === 0 ? (
+        <p className='empty-state'>No transactions found</p>
+      ) : (
       <table>
         <thead>
           <tr>
@@ -58,7 +70,7 @@ function TransactionList({ transactions, categories, onDelete }) {
                   t.type === 'income' ? 'income-amount' : 'expense-amount'
                 }
               >
-                {t.type === 'income' ? '+' : '-'}${t.amount}
+                {t.type === 'income' ? '+' : '-'}${t.amount.toFixed(2)}
               </td>
               <td>
                 <button className='delete-btn' onClick={() => onDelete(t.id)}>
@@ -69,6 +81,7 @@ function TransactionList({ transactions, categories, onDelete }) {
           ))}
         </tbody>
       </table>
+      )}
     </div>
   );
 }

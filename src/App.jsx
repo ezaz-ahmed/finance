@@ -2,7 +2,9 @@ import { useState } from 'react';
 import './App.css';
 import Summary from './Summary';
 import TransactionList from './TransactionList';
+import TransactionForm from './TransactionForm';
 import SpendingChart from './SpendingChart';
+import ConfirmDialog from './ConfirmDialog';
 
 const categories = [
   'food',
@@ -44,7 +46,7 @@ function App() {
       id: 4,
       description: 'Freelance Work',
       amount: 800,
-      type: 'expense',
+      type: 'income',
       category: 'salary',
       date: '2025-01-05',
     },
@@ -82,36 +84,21 @@ function App() {
     },
   ]);
 
-  const [description, setDescription] = useState('');
-  const [amount, setAmount] = useState('');
-  const [type, setType] = useState('expense');
-  const [category, setCategory] = useState('food');
+  const [pendingDelete, setPendingDelete] = useState(null);
 
   const handleDeleteTransaction = (id) => {
-    if (!window.confirm('Delete this transaction?')) return;
-    setTransactions((prev) => prev.filter((t) => t.id !== id));
+    const t = transactions.find((t) => t.id === id);
+    setPendingDelete(t);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!description || !amount) return;
+  const handleConfirmDelete = () => {
+    setTransactions((prev) => prev.filter((t) => t.id !== pendingDelete.id));
+    setPendingDelete(null);
+  };
 
-    setTransactions([
-      ...transactions,
-      {
-        id: Date.now(),
-        description,
-        amount: parseFloat(amount),
-        type,
-        category,
-        date: new Date().toISOString().split('T')[0],
-      },
-    ]);
-
-    setDescription('');
-    setAmount('');
-    setType('expense');
-    setCategory('food');
+  const handleAddTransaction = (transaction) => {
+    setPendingDelete(null);
+    setTransactions((prev) => [...prev, transaction]);
   };
 
   return (
@@ -122,44 +109,21 @@ function App() {
       <Summary transactions={transactions} />
       <SpendingChart transactions={transactions} />
 
-      <div className='add-transaction'>
-        <h2>Add Transaction</h2>
-        <form onSubmit={handleSubmit}>
-          <input
-            type='text'
-            placeholder='Description'
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-          <input
-            type='number'
-            placeholder='Amount'
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-          />
-          <select value={type} onChange={(e) => setType(e.target.value)}>
-            <option value='income'>Income</option>
-            <option value='expense'>Expense</option>
-          </select>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          >
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-          <button type='submit'>Add</button>
-        </form>
-      </div>
+      <TransactionForm categories={categories} onAdd={handleAddTransaction} />
 
       <TransactionList
         transactions={transactions}
         categories={categories}
         onDelete={handleDeleteTransaction}
       />
+
+      {pendingDelete && (
+        <ConfirmDialog
+          description={pendingDelete.description}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setPendingDelete(null)}
+        />
+      )}
     </div>
   );
 }
